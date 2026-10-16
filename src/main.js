@@ -1,7 +1,7 @@
 // Load ordinary UTF-8 JavaScript: no gzip, Blob import, or double decoding.
 const status = document.getElementById('loadText');
 try {
-  await import('./game.js?v=f299e24a');
+  await import('./game.js?v=diagB20261016');
 } catch (error) {
   console.error('The Drive Beyond startup failed:', error);
   if (status) status.textContent = 'Could not start the game.';
