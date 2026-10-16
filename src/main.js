@@ -1,18 +1,24 @@
 const status = document.getElementById('loadText');
 
 try {
-  if (!('DecompressionStream' in window)) {
-    throw new Error('This browser is missing gzip decompression support. Update Safari/iPadOS.');
-  }
-
   if (status) status.textContent = 'Starting The Drive Beyond…';
 
   const url = new URL('./game.js.gz', import.meta.url);
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Game bundle failed to load (${response.status}).`);
 
-  const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
-  let source = await new Response(stream).text();
+  // Browsers transparently decode HTTP Content-Encoding. Inspect the actual
+  // bytes rather than blindly applying a second gzip decompression.
+  const payload = new Uint8Array(await response.arrayBuffer());
+  let source;
+  if (payload.length >= 2 && payload[0] === 0x1f && payload[1] === 0x8b) {
+    if (!('DecompressionStream' in window)) throw new Error('Gzip decompression is unavailable in this browser.');
+    const stream = new Blob([payload]).stream().pipeThrough(new DecompressionStream('gzip'));
+    source = await new Response(stream).text();
+  } else {
+    source = new TextDecoder('utf-8').decode(payload);
+  }
+  if (!source.trim()) throw new Error('Game bundle was empty.');
 
   // The original alpha used a manual private-asset importer. Both vehicle packs
   // are now redistribution-permitted Creative Commons assets, so Pages installs
