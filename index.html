@@ -1,18 +1,17 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="theme-color" content="#101310" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#111511">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>The Drive Beyond</title>
-  <link rel="stylesheet" href="./src/style.css?v=f299e24a" />
+  <link rel="stylesheet" href="./src/style.css?v=vertical6">
   <script type="importmap">
   {
     "imports": {
-      "three": "./vendor/three.module.js?v=r161-local"
+      "three": "./vendor/three.module.js",
+      "three/addons/": "./vendor/three/addons/"
     }
   }
   </script>
@@ -23,20 +22,14 @@
   <div id="loading" class="screen visible">
     <div class="brand">THE DRIVE BEYOND</div>
     <div class="strap">NO DESTINATION.</div>
-    <div id="loadText" class="load-text">Building the road…</div>
+    <div id="loadText" class="load-text">Preparing the road…</div>
     <div class="load-line"><i id="loadBar"></i></div>
     <button id="driveBtn" class="primary" disabled>DRIVE</button>
-    <button id="assetBtn" class="secondary hidden" disabled>VEHICLE ASSETS</button>
-    <input id="assetInput" class="hidden" type="file" disabled />
-    <button id="fallbackBtn" class="text-btn hidden" disabled>FALLBACK CARS</button>
     <div id="protocolNote" class="small"></div>
   </div>
 
   <div id="hud" class="hidden">
-    <div class="top-left">
-      <div id="region" class="region">COASTAL FOOTHILLS</div>
-      <div id="timeWeather" class="micro">07:20 · CLEAR</div>
-    </div>
+    <div class="top-left"><div id="region" class="region">COASTAL FOOTHILLS</div><div id="timeWeather" class="micro">07:20 · CLEAR</div></div>
     <div class="top-right"><button id="pauseBtn" class="icon-btn" aria-label="Pause">•••</button></div>
     <div id="toast" class="toast"></div>
     <div id="interaction" class="interaction hidden">E · GET OUT</div>
@@ -50,23 +43,27 @@
   <div id="touch" class="touch hidden">
     <div class="steer"><button data-hold="left" aria-label="Steer left">‹</button><button data-hold="right" aria-label="Steer right">›</button></div>
     <div class="pedals"><button data-hold="brake">BRAKE</button><button data-hold="throttle" class="go">GO</button></div>
-    <button id="touchInteract" class="touch-interact hidden">E</button><button id="touchCamera" class="touch-camera">CAM</button>
+    <button id="touchInteract" class="touch-interact hidden">E</button>
+    <button id="touchCamera" class="touch-camera">CAM</button>
   </div>
 
   <div id="pause" class="modal hidden"><div class="panel">
-    <div class="panel-title">THE DRIVE BEYOND</div><button id="resumeBtn" class="primary">CONTINUE</button>
+    <div class="panel-title">THE DRIVE BEYOND</div>
+    <button id="resumeBtn" class="primary">CONTINUE</button>
     <div class="option"><span>HANDLING</span><button id="handlingBtn">ACCESSIBLE</button></div>
     <div class="option"><span>GRAPHICS</span><button id="graphicsBtn">BALANCED</button></div>
-    <button id="journalBtn">JOURNEY JOURNAL</button><button id="recoverBtn">RECOVER CAR</button>
+    <button id="journalBtn">JOURNEY JOURNAL</button>
+    <button id="recoverBtn">RECOVER CAR</button>
     <div class="keys">WASD / arrows · C camera · E interact · J journal · R recover</div>
   </div></div>
 
   <div id="journal" class="modal hidden"><div class="panel journal-panel">
     <div class="panel-title">JOURNEY JOURNAL</div>
     <div class="journal-stats"><div><b id="jDistance">0.0</b><span>KM DRIVEN</span></div><div><b id="jPeople">0</b><span>TRAVELLERS MET</span></div><div><b id="jIncidents">0</b><span>INCIDENTS</span></div></div>
-    <div id="journalEntries" class="entries"></div><button id="closeJournal" class="primary">BACK TO THE ROAD</button>
+    <div id="journalEntries" class="entries"></div>
+    <button id="closeJournal" class="primary">BACK TO THE ROAD</button>
   </div></div>
 
-  <script type="module" src="./src/main.js?v=0d43e7be"></script>
+  <script type="module" src="./src/game.js?v=vertical6"></script>
 </body>
 </html>
