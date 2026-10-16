@@ -2,6 +2,9 @@ import * as THREE from 'three';
 const $=id=>document.getElementById(id);
 const loading=$('loading'), hud=$('hud'),touch=$('touch'), drive=$('driveBtn'),status=$('loadText');
 
+const diag=document.createElement('div');diag.id='tdb-diagnostic';diag.style.cssText='position:fixed;top:88px;left:12px;z-index:100;background:rgba(0,0,0,.82);color:#baffb4;padding:10px;font:12px monospace;max-width:88vw;pointer-events:none;white-space:pre-line;border:1px solid #baffb4';diag.textContent='DIAG BUILD 2026-10-16 B';document.body.appendChild(diag);
+window.addEventListener('error',e=>{diag.textContent+='\\nERROR '+e.message});
+window.addEventListener('unhandledrejection',e=>{diag.textContent+='\\nREJECT '+String(e.reason)});
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x9ab9c8);
 scene.fog=new THREE.FogExp2(0x9ab9c8,.00125);
@@ -10,7 +13,7 @@ const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,3200);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
 renderer.setSize(innerWidth,innerHeight);
-renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();diag.textContent='WEBGL CONTEXT LOST';});
 $('game').appendChild(renderer.domElement);
 
 scene.add(new THREE.HemisphereLight(0xeaf3ff,0x526044,2.35));
@@ -41,6 +44,7 @@ cube(car,1.7,.65,2.15,0x304352,0,1.39,-.25);
 for(const x of [-1.03,1.03])for(const z of [-1.35,1.35]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.41,.41,.26,12),mat(0x202324));wheel.rotation.z=Math.PI/2;wheel.position.set(x,.44,z);car.add(wheel)}
 for(const x of [-.7,.7])cube(car,.38,.18,.06,0xb9312b,x,.8,2.17);
 scene.add(car);
+const testCube=new THREE.Mesh(new THREE.BoxGeometry(3,3,3),new THREE.MeshBasicMaterial({color:0xff00ff,depthTest:false}));scene.add(testCube);
 
 // A guaranteed local ground plate prevents an all-sky frame while chunks are streaming.
 const safetyGround=new THREE.Mesh(new THREE.PlaneGeometry(1800,4200),mat(0x506f49));
@@ -170,7 +174,10 @@ function frame(t){
   camera.position.set(camX,up,camZ);
   camera.lookAt(Math.sin(state.heading)*22,1.8,Math.cos(state.heading)*22);
 
+  testCube.position.copy(camera.position).add(new THREE.Vector3(0,0,-8).applyQuaternion(camera.quaternion));
+  testCube.quaternion.copy(camera.quaternion);
   renderer.render(scene,camera);
+  if(!frame.diagAt||t-frame.diagAt>800){frame.diagAt=t;diag.textContent='DIAG BUILD B | '+(state.started?'DRIVING':'MENU')+'\\nWEBGL '+renderer.capabilities.isWebGL2+' | calls '+renderer.info.render.calls+' | tris '+renderer.info.render.triangles+'\\nscene '+scene.children.length+' world '+worldRoot.children.length+'\\ncam '+camera.position.toArray().map(n=>n.toFixed(1)).join(',')+'\\nMAGENTA TEST CUBE should be centered';}
 }
 
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
