@@ -37,61 +37,36 @@
       <div id="region" class="region">COASTAL FOOTHILLS</div>
       <div id="timeWeather" class="micro">07:20 · CLEAR</div>
     </div>
-    <div class="top-right">
-      <button id="pauseBtn" class="icon-btn" aria-label="Pause">•••</button>
-    </div>
+    <div class="top-right"><button id="pauseBtn" class="icon-btn" aria-label="Pause">•••</button></div>
     <div id="toast" class="toast"></div>
     <div id="interaction" class="interaction hidden">E · GET OUT</div>
     <div class="bottom-left readout">
-      <div><span>FUEL</span><b id="fuel">100</b></div>
-      <div class="bar"><i id="fuelBar"></i></div>
-      <div><span>TYRE</span><b id="tyre">100</b></div>
-      <div class="bar"><i id="tyreBar"></i></div>
+      <div><span>FUEL</span><b id="fuel">100</b></div><div class="bar"><i id="fuelBar"></i></div>
+      <div><span>TYRE</span><b id="tyre">100</b></div><div class="bar"><i id="tyreBar"></i></div>
     </div>
-    <div class="bottom-right speedbox">
-      <div id="speed" class="speed">0</div>
-      <div class="unit">KM/H</div>
-    </div>
+    <div class="bottom-right speedbox"><div id="speed" class="speed">0</div><div class="unit">KM/H</div></div>
   </div>
 
   <div id="touch" class="touch hidden">
-    <div class="steer">
-      <button data-hold="left" aria-label="Steer left">‹</button>
-      <button data-hold="right" aria-label="Steer right">›</button>
-    </div>
-    <div class="pedals">
-      <button data-hold="brake">BRAKE</button>
-      <button data-hold="throttle" class="go">GO</button>
-    </div>
-    <button id="touchInteract" class="touch-interact hidden">E</button>
-    <button id="touchCamera" class="touch-camera">CAM</button>
+    <div class="steer"><button data-hold="left" aria-label="Steer left">‹</button><button data-hold="right" aria-label="Steer right">›</button></div>
+    <div class="pedals"><button data-hold="brake">BRAKE</button><button data-hold="throttle" class="go">GO</button></div>
+    <button id="touchInteract" class="touch-interact hidden">E</button><button id="touchCamera" class="touch-camera">CAM</button>
   </div>
 
-  <div id="pause" class="modal hidden">
-    <div class="panel">
-      <div class="panel-title">THE DRIVE BEYOND</div>
-      <button id="resumeBtn" class="primary">CONTINUE</button>
-      <div class="option"><span>HANDLING</span><button id="handlingBtn">ACCESSIBLE</button></div>
-      <div class="option"><span>GRAPHICS</span><button id="graphicsBtn">BALANCED</button></div>
-      <button id="journalBtn">JOURNEY JOURNAL</button>
-      <button id="recoverBtn">RECOVER CAR</button>
-      <div class="keys">WASD / arrows · C camera · E interact · J journal · R recover</div>
-    </div>
-  </div>
+  <div id="pause" class="modal hidden"><div class="panel">
+    <div class="panel-title">THE DRIVE BEYOND</div><button id="resumeBtn" class="primary">CONTINUE</button>
+    <div class="option"><span>HANDLING</span><button id="handlingBtn">ACCESSIBLE</button></div>
+    <div class="option"><span>GRAPHICS</span><button id="graphicsBtn">BALANCED</button></div>
+    <button id="journalBtn">JOURNEY JOURNAL</button><button id="recoverBtn">RECOVER CAR</button>
+    <div class="keys">WASD / arrows · C camera · E interact · J journal · R recover</div>
+  </div></div>
 
-  <div id="journal" class="modal hidden">
-    <div class="panel journal-panel">
-      <div class="panel-title">JOURNEY JOURNAL</div>
-      <div class="journal-stats">
-        <div><b id="jDistance">0.0</b><span>KM DRIVEN</span></div>
-        <div><b id="jPeople">0</b><span>TRAVELLERS MET</span></div>
-        <div><b id="jIncidents">0</b><span>INCIDENTS</span></div>
-      </div>
-      <div id="journalEntries" class="entries"></div>
-      <button id="closeJournal" class="primary">BACK TO THE ROAD</button>
-    </div>
-  </div>
+  <div id="journal" class="modal hidden"><div class="panel journal-panel">
+    <div class="panel-title">JOURNEY JOURNAL</div>
+    <div class="journal-stats"><div><b id="jDistance">0.0</b><span>KM DRIVEN</span></div><div><b id="jPeople">0</b><span>TRAVELLERS MET</span></div><div><b id="jIncidents">0</b><span>INCIDENTS</span></div></div>
+    <div id="journalEntries" class="entries"></div><button id="closeJournal" class="primary">BACK TO THE ROAD</button>
+  </div></div>
 
-  <script type="module" src="./src/main.js?v=diagB20261016"></script>
+  <script type="module" src="./src/main.js?v=0d43e7be"></script>
 </body>
 </html>
