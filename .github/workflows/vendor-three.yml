@@ -1,0 +1,30 @@
+name: Vendor Three.js
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/vendor-three.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pinned Three.js module
+        run: |
+          mkdir -p vendor
+          curl -L --fail --retry 3 \
+            https://raw.githubusercontent.com/mrdoob/three.js/r161/build/three.module.js \
+            -o vendor/three.module.js
+          test -s vendor/three.module.js
+      - name: Commit vendored engine
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add vendor/three.module.js
+          if ! git diff --cached --quiet; then
+            git commit -m 'Vendor Three.js locally for iPad reliability'
+            git push
+          fi
