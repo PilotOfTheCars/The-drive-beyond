@@ -6,8 +6,24 @@ Runtime libraries are loaded from jsDelivr rather than vendored in this reposito
 - Rapier — Apache-2.0 — https://github.com/dimforge/rapier.js
 - fflate — MIT License — https://github.com/101arrowz/fflate
 
-## Private/user-supplied assets
+## Vehicle assets
 
-The public source repository does not redistribute the user's car model files. On first launch, the player may import a private asset ZIP from their own device. Those files are stored locally in browser IndexedDB and are not uploaded by the game.
+The Drive Beyond redistributes the following user-selected Creative Commons vehicle assets with attribution, as permitted by their licenses.
 
-The traffic pack used by the project was supplied by the user and is sold separately by its creator. Keep it out of the public repository unless its license explicitly permits raw redistribution.
+### Generic passenger car pack
+
+- Creator: **Comrade1280**
+- Source: Sketchfab — “Generic passenger car pack”
+- Model page: https://sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5
+- License: **Creative Commons Attribution (CC BY)**
+- Use in this project: AI traffic vehicles
+
+### HatchBackLowPoly
+
+- Creator: **YunxDestro-3d-Models**
+- Source: CGTrader
+- Asset: **HatchBackLowPoly**
+- License: Creative Commons attribution-style license permitting redistribution/use with creator credit, as supplied with the asset by the user
+- Use in this project: player vehicle
+
+The original creators retain all rights granted and reserved by their respective licenses. Inclusion in The Drive Beyond does not imply endorsement by either creator.
