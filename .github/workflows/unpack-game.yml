@@ -19,7 +19,7 @@ jobs:
           import gzip, pathlib
           src = pathlib.Path('src/game.js.gz')
           data = src.read_bytes()
-          code = gzip.decompress(data) if data[:2] == b'\\x1f\\x8b' else data
+          code = gzip.decompress(data)
           code.decode('utf-8')
           pathlib.Path('src/game.js').write_bytes(code)
           PY
