@@ -1,30 +1,44 @@
-name: Vendor Three.js
+name: Prepare game runtime
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/vendor-three.yml'
+      - 'tdb-player-assets.zip'
+      - 'tdb-traffic-assets.zip'
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  vendor:
+  prepare:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download pinned Three.js module
+      - name: Vendor pinned Three.js runtime and addons
         run: |
-          mkdir -p vendor
-          curl -L --fail --retry 3 \
-            https://raw.githubusercontent.com/mrdoob/three.js/r161/build/three.module.js \
-            -o vendor/three.module.js
-          test -s vendor/three.module.js
-      - name: Commit vendored engine
+          set -euxo pipefail
+          mkdir -p vendor/three/addons/loaders vendor/three/addons/libs vendor/three/addons/curves vendor/three/addons/math
+          curl -L --fail --retry 3 https://raw.githubusercontent.com/mrdoob/three.js/r161/build/three.module.js -o vendor/three.module.js
+          curl -L --fail --retry 3 https://raw.githubusercontent.com/mrdoob/three.js/r161/examples/jsm/loaders/FBXLoader.js -o vendor/three/addons/loaders/FBXLoader.js
+          curl -L --fail --retry 3 https://raw.githubusercontent.com/mrdoob/three.js/r161/examples/jsm/libs/fflate.module.js -o vendor/three/addons/libs/fflate.module.js
+          curl -L --fail --retry 3 https://raw.githubusercontent.com/mrdoob/three.js/r161/examples/jsm/curves/NURBSCurve.js -o vendor/three/addons/curves/NURBSCurve.js
+          curl -L --fail --retry 3 https://raw.githubusercontent.com/mrdoob/three.js/r161/examples/jsm/curves/NURBSUtils.js -o vendor/three/addons/curves/NURBSUtils.js
+          curl -L --fail --retry 3 https://raw.githubusercontent.com/mrdoob/three.js/r161/examples/jsm/math/ImprovedNoise.js -o vendor/three/addons/math/ImprovedNoise.js
+          test -s vendor/three/addons/loaders/FBXLoader.js
+      - name: Extract the uploaded Creative Commons vehicle packs
+        run: |
+          set -euxo pipefail
+          rm -rf assets/player assets/traffic
+          unzip -oq tdb-player-assets.zip -d .
+          unzip -oq tdb-traffic-assets.zip -d .
+          test -s assets/player/HatchBackLowPoly.fbx
+          test -s assets/traffic/fab.fbx
+      - name: Commit prepared runtime and vehicle assets
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add vendor/three.module.js
+          git add vendor assets
           if ! git diff --cached --quiet; then
-            git commit -m 'Vendor Three.js locally for iPad reliability'
+            git commit -m 'Prepare browser runtime and extracted vehicle assets'
             git push
           fi
