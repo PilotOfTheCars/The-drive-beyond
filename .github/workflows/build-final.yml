@@ -1,0 +1,72 @@
+name: Build final open-source game
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'src/final-game.js'
+      - 'scripts/build.mjs'
+      - '.github/workflows/build-final.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install pinned open-source dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Vendor pinned CC0 Quaternius nature assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/open/nature
+          base='https://raw.githubusercontent.com/agentkaerf/FreeModels/db3df04d1e4714298a09510b26fb6de6645138a2'
+
+          curl -fL "$base/Ultimate%20Stylized%20Nature%20-%20May%202022/glTF/BirchTree_1.gltf" -o assets/open/nature/BirchTree_1.gltf
+          curl -fL "$base/Ultimate%20Stylized%20Nature%20-%20May%202022/glTF/BirchTree_1.bin" -o assets/open/nature/BirchTree_1.bin
+          curl -fL "$base/Ultimate%20Stylized%20Nature%20-%20May%202022/glTF/BirchTree_Bark_Normal.png" -o assets/open/nature/BirchTree_Bark_Normal.png
+          curl -fL "$base/Ultimate%20Stylized%20Nature%20-%20May%202022/glTF/BirchTree_Bark.jpg" -o assets/open/nature/BirchTree_Bark.jpg
+          curl -fL "$base/Ultimate%20Stylized%20Nature%20-%20May%202022/glTF/BirchTree_Leaves.png" -o assets/open/nature/BirchTree_Leaves.png
+
+          curl -fL "$base/Stylized%20Nature%20MegaKit%5BStandard%5D/glTF/Rock_Medium_1.gltf" -o assets/open/nature/Rock_Medium_1.gltf
+          curl -fL "$base/Stylized%20Nature%20MegaKit%5BStandard%5D/glTF/Rock_Medium_1.bin" -o assets/open/nature/Rock_Medium_1.bin
+          curl -fL "$base/Stylized%20Nature%20MegaKit%5BStandard%5D/glTF/Rocks_Diffuse.png" -o assets/open/nature/Rocks_Diffuse.png
+
+      - name: Validate source
+        run: npm run check
+
+      - name: Bundle all runtime dependencies locally
+        run: npm run build
+
+      - name: Validate production bundle
+        run: node --check src/final.bundle.js
+
+      - name: Commit reproducible browser build
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package-lock.json src/final.bundle.js src/final.bundle.js.map assets/open/nature
+          if [ -f src/final.bundle.js.LEGAL.txt ]; then git add src/final.bundle.js.LEGAL.txt; fi
+          if git diff --cached --quiet; then
+            echo 'No generated changes.'
+          else
+            git commit -m 'Build integrated open-source browser game'
+            git push
+          fi
