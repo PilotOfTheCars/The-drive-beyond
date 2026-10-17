@@ -1,0 +1,22 @@
+Bundled license information:
+
+three/build/three.core.js:
+three/build/three.module.js:
+three/build/three.webgpu.js:
+three/build/three.tsl.js:
+  /**
+   * @license
+   * Copyright 2010-2026 Three.js Authors
+   * SPDX-License-Identifier: MIT
+   */
+
+three/examples/jsm/libs/fflate.module.js:
+  /*!
+  fflate - fast JavaScript compression/decompression
+  <https://101arrowz.github.io/fflate>
+  Licensed under MIT. https://github.com/101arrowz/fflate/blob/master/LICENSE
+  version 0.8.2
+  */
+
+@noble/secp256k1/index.js:
+  /*! noble-secp256k1 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
