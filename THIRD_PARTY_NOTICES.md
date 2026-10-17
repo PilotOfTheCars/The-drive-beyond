@@ -1,10 +1,11 @@
 # Third-party notices
 
-Runtime libraries are loaded from jsDelivr rather than vendored in this repository.
+## Runtime libraries
 
 - three.js — MIT License — https://github.com/mrdoob/three.js
-- Rapier — Apache-2.0 — https://github.com/dimforge/rapier.js
-- fflate — MIT License — https://github.com/101arrowz/fflate
+  - Vendored locally in `vendor/` for reliable browser/iPad startup.
+
+Rapier and other previously researched libraries may be added in later milestones, but they are not claimed as active dependencies of the current clean-room vertical slice unless they are actually present in the repository.
 
 ## Vehicle assets
 
