@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/final-game.js --bundle --format=esm --platform=browser --target=es2022 --minify --sourcemap --outfile=src/final.bundle.js",
+    "build": "node scripts/build.mjs",
     "check": "node --check src/final-game.js"
   },
   "dependencies": {
