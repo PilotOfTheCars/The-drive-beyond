@@ -23,6 +23,16 @@ patch(
   "const worldVisual = new THREE.Group(); scene.add(worldVisual);\nconst roadVisual = new THREE.Group(); worldVisual.add(roadVisual);",
   "const worldVisual = new THREE.Group(); scene.add(worldVisual);\nconst terrainVisual = new THREE.Group(); worldVisual.add(terrainVisual);\nconst roadVisual = new THREE.Group(); worldVisual.add(roadVisual);"
 );
+
+// The source-level road collision fix introduced a roadCollider reference. Make it an explicit
+// production variable next to the terrain collider so the generated browser bundle cannot boot with
+// an undeclared identifier.
+patch(
+  'declare Rapier road collider',
+  'let terrainCollider = null;\nlet heightfieldData = null;',
+  'let terrainCollider = null;\nlet roadCollider = null;\nlet heightfieldData = null;'
+);
+
 patch(
   'remove heightmap canvas path',
   /function makeHeightCanvas\(\) \{[\s\S]*?\n\}\nfunction rebuildPhysicsTerrain\(\) \{/,
