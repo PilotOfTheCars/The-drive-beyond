@@ -74,7 +74,11 @@
         xhr.onload = () => {
           const ok = (xhr.status >= 200 && xhr.status < 300) || xhr.status === 0;
           if (!ok) {
-            reject(new Error(`FBX HTTP ${xhr.status} while loading ${url}`));
+            const detail = `FBX HTTP ${xhr.status}: ${url}`;
+            const note = document.getElementById('protocolNote');
+            if (note) { note.textContent = detail; note.style.color = '#ffb7a7'; note.style.overflowWrap = 'anywhere'; }
+            console.error('[TDB asset diagnostics]', detail, 'response:', xhr.responseURL);
+            reject(new Error(detail));
             return;
           }
           resolve(new Response(xhr.response, {
@@ -83,13 +87,23 @@
             headers: { 'Content-Type': 'application/octet-stream' }
           }));
         };
-        xhr.onerror = () => reject(new Error(`FBX network error while loading ${url}`));
-        xhr.ontimeout = () => reject(new Error(`FBX download timed out: ${url}`));
+        xhr.onerror = () => {
+          const detail = `FBX network failure: ${url}`;
+          const note = document.getElementById('protocolNote');
+          if (note) { note.textContent = detail; note.style.color = '#ffb7a7'; note.style.overflowWrap = 'anywhere'; }
+          reject(new Error(detail));
+        };
+        xhr.ontimeout = () => {
+          const detail = `FBX timed out: ${url}`;
+          const note = document.getElementById('protocolNote');
+          if (note) { note.textContent = detail; note.style.color = '#ffb7a7'; note.style.overflowWrap = 'anywhere'; }
+          reject(new Error(detail));
+        };
         xhr.send();
       });
     };
   })();
   </script>
-  <script type="module" src="./src/final.bundle.js?v=fbx-xhr-1"></script>
+  <script type="module" src="./src/final.bundle.js?v=fbx-diagnostics-2"></script>
 </body>
 </html>
