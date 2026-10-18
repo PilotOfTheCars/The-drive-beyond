@@ -46,6 +46,24 @@ jobs:
           curl -fL "$base/Stylized%20Nature%20MegaKit%5BStandard%5D/glTF/Rock_Medium_1.bin" -o assets/open/nature/Rock_Medium_1.bin
           curl -fL "$base/Stylized%20Nature%20MegaKit%5BStandard%5D/glTF/Rocks_Diffuse.png" -o assets/open/nature/Rocks_Diffuse.png
 
+      - name: Fix FBX root URL routing for browser builds
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/final-game.js')
+          s = p.read_text('utf-8')
+          old = "    if (!base || /^(blob:|data:)/.test(base)) return url;"
+          new = "    if (!base || /^(blob:|data:)/.test(base) || /\\.fbx$/i.test(base)) return url;"
+          if old not in s:
+              raise SystemExit('Expected texture URL modifier line not found')
+          s = s.replace(old, new, 1)
+          # Future boot failures should show the useful error message, not only a minified stack coordinate.
+          s = s.replace("ui.protocol.textContent=String(err?.stack||err?.message||err);", "ui.protocol.textContent=String(err?.message||err);", 1)
+          p.write_text(s, encoding='utf-8')
+          print('FBX files now bypass the texture-folder URL modifier.')
+          PY
+
       - name: Validate source
         run: npm run check
 
@@ -55,25 +73,20 @@ jobs:
       - name: Validate production bundle
         run: node --check src/final.bundle.js
 
-      - name: Decode reported iPad stack location
+      - name: Assert uploaded vehicle paths survived bundling
         shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          lines = Path('src/final.bundle.js').read_text('utf-8').splitlines()
-          line_no = 3
-          col_no = 318537
-          if len(lines) >= line_no:
-              line = lines[line_no - 1]
-              i = max(0, col_no - 1)
-              lo = max(0, i - 900)
-              hi = min(len(line), i + 900)
-              print('--- iPad stack context ---')
-              print(line[lo:hi])
-              print('--- end context ---')
-          else:
-              print('Bundle has fewer than 3 lines; cannot decode coordinate.')
-          PY
+          set -euo pipefail
+          grep -q 'HatchBackLowPoly.fbx' src/final.bundle.js
+          grep -q 'fab.fbx' src/final.bundle.js
+          if grep -q 'Textures/HatchBackLowPoly.fbx' src/final.bundle.js; then
+            echo 'Player FBX was incorrectly rewritten into the texture folder.' >&2
+            exit 1
+          fi
+          if grep -q 'textures/fab.fbx' src/final.bundle.js; then
+            echo 'Traffic FBX was incorrectly rewritten into the texture folder.' >&2
+            exit 1
+          fi
 
       - name: Best-effort browser boot smoke test
         shell: bash
