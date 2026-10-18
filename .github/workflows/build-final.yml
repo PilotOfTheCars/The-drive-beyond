@@ -55,6 +55,47 @@ jobs:
       - name: Validate production bundle
         run: node --check src/final.bundle.js
 
+      - name: Decode reported iPad stack location
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          lines = Path('src/final.bundle.js').read_text('utf-8').splitlines()
+          line_no = 3
+          col_no = 318537
+          if len(lines) >= line_no:
+              line = lines[line_no - 1]
+              i = max(0, col_no - 1)
+              lo = max(0, i - 900)
+              hi = min(len(line), i + 900)
+              print('--- iPad stack context ---')
+              print(line[lo:hi])
+              print('--- end context ---')
+          else:
+              print('Bundle has fewer than 3 lines; cannot decode coordinate.')
+          PY
+
+      - name: Best-effort browser boot smoke test
+        shell: bash
+        run: |
+          set +e
+          python3 -m http.server 8000 >/tmp/tdb-http.log 2>&1 &
+          server=$!
+          sleep 2
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -n "$chrome" ]; then
+            "$chrome" --headless=new --no-sandbox --disable-dev-shm-usage --enable-unsafe-webgpu --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/ > /tmp/tdb-dom.html 2>/tmp/tdb-browser.log
+            echo '--- loading status ---'
+            grep -o '<div id="loadText"[^>]*>[^<]*' /tmp/tdb-dom.html || true
+            grep -o '<div id="protocolNote"[^>]*>[^<]*' /tmp/tdb-dom.html || true
+            echo '--- browser stderr tail ---'
+            tail -80 /tmp/tdb-browser.log || true
+          else
+            echo 'No Chrome/Chromium binary available on runner; skipping browser smoke test.'
+          fi
+          kill "$server" 2>/dev/null || true
+          exit 0
+
       - name: Commit reproducible browser build
         shell: bash
         run: |
