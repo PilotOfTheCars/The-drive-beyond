@@ -1,6 +1,6 @@
 {
   "name": "the-drive-beyond",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.21.0",
-    "@interverse/three-terrain-lod": "2.1.1",
     "dexie": "4.4.6",
     "simplex-noise": "4.0.3",
     "three": "0.186.1",
