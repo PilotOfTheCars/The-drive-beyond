@@ -1,11 +1,11 @@
 {
   "name": "the-drive-beyond",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.mjs",
-    "check": "node --check src/final-game.js"
+    "build": "node scripts/build.mjs && node scripts/finish-build.mjs",
+    "check": "node --check src/final-game.js && node --check scripts/finish-build.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.21.0",
