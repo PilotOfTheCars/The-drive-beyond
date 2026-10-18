@@ -56,6 +56,40 @@
     <button id="closeJournal" class="primary">BACK TO THE ROAD</button>
   </div></div>
 
-  <script type="module" src="./src/final.bundle.js?v=766f65d3"></script>
+  <script>
+  (() => {
+    // iPadOS/WebKit compatibility: Three.js FileLoader currently constructs FBX requests with
+    // combined AbortSignals. The user's iPad is failing inside that fetch path before FBX parsing.
+    // Route FBX binary downloads through plain XHR instead, then hand Three.js a normal Response.
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = function(input, init) {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      if (!/\.fbx(?:$|[?#])/i.test(url)) return nativeFetch(input, init);
+
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.timeout = 45000;
+        xhr.onload = () => {
+          const ok = (xhr.status >= 200 && xhr.status < 300) || xhr.status === 0;
+          if (!ok) {
+            reject(new Error(`FBX HTTP ${xhr.status} while loading ${url}`));
+            return;
+          }
+          resolve(new Response(xhr.response, {
+            status: xhr.status === 0 ? 200 : xhr.status,
+            statusText: xhr.statusText || 'OK',
+            headers: { 'Content-Type': 'application/octet-stream' }
+          }));
+        };
+        xhr.onerror = () => reject(new Error(`FBX network error while loading ${url}`));
+        xhr.ontimeout = () => reject(new Error(`FBX download timed out: ${url}`));
+        xhr.send();
+      });
+    };
+  })();
+  </script>
+  <script type="module" src="./src/final.bundle.js?v=fbx-xhr-1"></script>
 </body>
 </html>
