@@ -59,8 +59,8 @@
   <script>
   (() => {
     // iPadOS/WebKit compatibility: Three.js FileLoader currently constructs FBX requests with
-    // combined AbortSignals. The user's iPad is failing inside that fetch path before FBX parsing.
-    // Route FBX binary downloads through plain XHR instead, then hand Three.js a normal Response.
+    // combined AbortSignals. Route FBX binary downloads through plain XHR, then hand Three.js
+    // a normal Response. The production bundle now keeps root .fbx URLs out of texture remapping.
     const nativeFetch = window.fetch.bind(window);
     window.fetch = function(input, init) {
       const url = typeof input === 'string' ? input : (input && input.url) || '';
@@ -104,6 +104,6 @@
     };
   })();
   </script>
-  <script type="module" src="./src/final.bundle.js?v=fbx-diagnostics-2"></script>
+  <script type="module" src="./src/final.bundle.js?v=fbx-pathfix-1"></script>
 </body>
 </html>
