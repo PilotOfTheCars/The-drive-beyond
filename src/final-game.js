@@ -245,9 +245,18 @@ function ribbon(z0, z1, half, material, lift) {
   g.computeBoundsTree(); const m = new THREE.Mesh(g, material); m.receiveShadow = true; return m;
 }
 function rebuildRoad() {
+  if (roadCollider) { physics.removeCollider(roadCollider, true); roadCollider = null; }
+  for (const child of roadVisual.children) { child.geometry?.disposeBoundsTree?.(); child.geometry?.dispose(); }
   roadVisual.clear();
   roadVisual.add(ribbon(-1900, 1900, SHOULDER_HALF, shoulderMat, 0.03));
-  roadVisual.add(ribbon(-1900, 1900, ROAD_HALF, roadMat, 0.09));
+  const drivingSurface = ribbon(-1900, 1900, ROAD_HALF, roadMat, 0.09);
+  roadVisual.add(drivingSurface);
+  // Match the visual asphalt with an exact static Rapier triangle mesh.
+  // A coarse heightfield alone cannot resolve a 7.3-metre-wide road.
+  const geometry = drivingSurface.geometry;
+  const verts = new Float32Array(geometry.attributes.position.array);
+  const faces = new Uint32Array(geometry.index.array);
+  roadCollider = physics.createCollider(RAPIER.ColliderDesc.trimesh(verts, faces).setFriction(1.2));
   roadVisual.add(ribbon(-1900, 1900, 0.065, lineMat, 0.125));
   roadVisual.add(ribbon(-1900, 1900, ROAD_HALF - 0.24, lineMat, 0.125));
   roadVisual.add(ribbon(-1900, 1900, -(ROAD_HALF - 0.24), lineMat, 0.125));
@@ -508,6 +517,14 @@ function physicsStep(dt) {
     for (let i = 0; i < 4; i++) { vehicle.setWheelEngineForce(i, engine); vehicle.setWheelBrake(i, brakeForce); }
     vehicle.setWheelSteering(0, steering); vehicle.setWheelSteering(1, steering);
     vehicle.updateVehicle(dt, RAPIER.QueryFilterFlags.EXCLUDE_DYNAMIC); physics.step();
+    // Never allow a transient physics/terrain mismatch to bury the car.
+    // Recovery preserves the uploaded 3D model and restores wheel contact.
+    const cp = chassis.translation();
+    const expectedGround = worldHeight(origin.x + cp.x, origin.z + cp.z);
+    if (!Number.isFinite(cp.y) || cp.y < expectedGround - 1.1) {
+      recover();
+      toast('Vehicle recovered after ground collision loss.');
+    }
     const kmh = speed * 3.6; state.fuel = Math.max(0, state.fuel - (0.00005 + throttle * 0.00011) * speed); state.distance += speed * dt;
     if (state.fuel <= 0) for (let i=0;i<4;i++) vehicle.setWheelEngineForce(i,0);
     const pg = playerGlobal(); const offroad = Math.abs(pg.x - roadCenterX(pg.z)) > SHOULDER_HALF + 1.5; if (offroad && kmh > 75) state.tyre = Math.max(0, state.tyre - (kmh - 75) * 0.00006);
