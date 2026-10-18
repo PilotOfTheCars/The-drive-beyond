@@ -1,66 +1,54 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <meta name="theme-color" content="#111511">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#111614" />
   <title>The Drive Beyond</title>
-  <link rel="stylesheet" href="./src/style.css?v=oss-final-3">
+  <link rel="stylesheet" href="./src/style.css?v=tdb-prod-5" />
 </head>
 <body>
   <div id="game"></div>
 
-  <div id="loading" class="screen visible">
-    <div class="brand">THE DRIVE BEYOND</div>
-    <div class="strap">NO DESTINATION.</div>
-    <div id="loadText" class="load-text">Starting open-source systems…</div>
-    <div class="load-line"><i id="loadBar"></i></div>
-    <button id="driveBtn" class="primary" disabled>DRIVE</button>
-    <div id="protocolNote" class="small"></div>
+  <div id="loading">
+    <div class="loadCard">
+      <h1>THE DRIVE BEYOND</h1>
+      <div class="tag">NO DESTINATION.</div>
+      <div id="loadText">Preparing the road…</div>
+      <div class="loadTrack"><div id="loadBar"></div></div>
+      <button id="driveBtn" disabled>DRIVE</button>
+      <div id="protocolNote"></div>
+    </div>
   </div>
 
   <div id="hud" class="hidden">
-    <div class="top-left"><div id="region" class="region">COASTAL FOOTHILLS</div><div id="timeWeather" class="micro">07:20 · CLEAR</div></div>
-    <div class="top-right"><button id="pauseBtn" class="icon-btn" aria-label="Pause">•••</button></div>
-    <div id="toast" class="toast"></div>
-    <div id="interaction" class="interaction hidden">E · GET OUT</div>
-    <div class="bottom-left readout">
-      <div><span>FUEL</span><b id="fuel">100</b></div><div class="bar"><i id="fuelBar"></i></div>
-      <div><span>TYRE</span><b id="tyre">100</b></div><div class="bar"><i id="tyreBar"></i></div>
-    </div>
-    <div class="bottom-right speedbox"><div id="speed" class="speed">0</div><div class="unit">KM/H</div></div>
+    <div class="hudTopLeft"><b id="region">COASTAL FOOTHILLS</b><span id="timeWeather">07:20 · CLEAR</span></div>
+    <button id="pauseBtn" class="round menu">•••</button>
+    <div class="bars"><label>FUEL <b id="fuel">100</b></label><i><u id="fuelBar"></u></i><label>TYRE <b id="tyre">100</b></label><i><u id="tyreBar"></u></i></div>
+    <div class="speed"><b id="speed">0</b><span>KM/H</span></div>
+    <div id="interaction" class="interaction hidden"></div>
+    <div id="toast"></div>
   </div>
 
-  <div id="touch" class="touch hidden">
-    <div class="steer"><button data-hold="left" aria-label="Steer left">‹</button><button data-hold="right" aria-label="Steer right">›</button></div>
+  <div id="touch" class="hidden">
+    <button id="touchCamera" class="round small">CAM</button>
+    <div class="steer"><button data-hold="left">‹</button><button data-hold="right">›</button></div>
     <div class="pedals"><button data-hold="brake">BRAKE</button><button data-hold="throttle" class="go">GO</button></div>
-    <button id="touchInteract" class="touch-interact hidden">E</button>
-    <button id="touchCamera" class="touch-camera">CAM</button>
+    <button id="touchInteract" class="round interact hidden">E</button>
   </div>
 
-  <div id="pause" class="modal hidden"><div class="panel">
-    <div class="panel-title">THE DRIVE BEYOND</div>
-    <button id="resumeBtn" class="primary">CONTINUE</button>
-    <div class="option"><span>HANDLING</span><button id="handlingBtn">ACCESSIBLE</button></div>
-    <div class="option"><span>GRAPHICS</span><button id="graphicsBtn">BALANCED</button></div>
-    <button id="journalBtn">JOURNEY JOURNAL</button>
-    <button id="recoverBtn">RECOVER CAR</button>
-    <div class="keys">WASD / arrows · C camera · E interact · J journal · R recover</div>
-  </div></div>
+  <div id="pause" class="panel hidden">
+    <div class="panelCard"><h2>PAUSED</h2><button id="resumeBtn">RESUME</button><button id="journalBtn">JOURNEY JOURNAL</button><button id="handlingBtn">ACCESSIBLE</button><button id="graphicsBtn">BALANCED</button><button id="recoverBtn">RECOVER VEHICLE</button></div>
+  </div>
 
-  <div id="journal" class="modal hidden"><div class="panel journal-panel">
-    <div class="panel-title">JOURNEY JOURNAL</div>
-    <div class="journal-stats"><div><b id="jDistance">0.0</b><span>KM DRIVEN</span></div><div><b id="jPeople">0</b><span>TRAVELLERS MET</span></div><div><b id="jIncidents">0</b><span>INCIDENTS</span></div></div>
-    <div id="journalEntries" class="entries"></div>
-    <button id="closeJournal" class="primary">BACK TO THE ROAD</button>
-  </div></div>
+  <div id="journal" class="panel hidden">
+    <div class="panelCard journal"><h2>JOURNEY JOURNAL</h2><p><b id="jDistance">0.0</b> km travelled · <b id="jPeople">0</b> travellers met · <b id="jIncidents">0</b> incidents seen</p><div id="journalEntries"></div><button id="closeJournal">BACK TO ROAD</button></div>
+  </div>
 
   <script>
+  // iPad/WebKit occasionally fails Three.js' normal fetch() path on larger FBX files.
+  // Keep fetch semantics for everything else, but retrieve FBX bytes with XMLHttpRequest.
   (() => {
-    // iPadOS/WebKit compatibility: Three.js FileLoader currently constructs FBX requests with
-    // combined AbortSignals. Route FBX binary downloads through plain XHR, then hand Three.js
-    // a normal Response. The production bundle now keeps root .fbx URLs out of texture remapping.
     const nativeFetch = window.fetch.bind(window);
     window.fetch = function(input, init) {
       const url = typeof input === 'string' ? input : (input && input.url) || '';
@@ -104,6 +92,6 @@
     };
   })();
   </script>
-  <script type="module" src="./src/final.bundle.js?v=fbx-pathfix-1"></script>
+  <script type="module" src="./src/final.bundle.js?v=terrain-rig-cockpit-1ec6619f"></script>
 </body>
 </html>
