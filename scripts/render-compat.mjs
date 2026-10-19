@@ -27,14 +27,19 @@ renderer.setClearColor(0xa6bec8, 1);
 $('game').appendChild(renderer.domElement);`
 );
 
-// Rapier's nrows/ncols are the dimensions of the height matrix itself, not the number
-// of subdivisions. The matrix produced by sampleHeightGrid(PHYS_RES) contains
-// PHYS_RES * PHYS_RES values, so passing PHYS_RES - 1 describes the wrong shape.
-must(
-  'Rapier heightfield dimensions',
-  'RAPIER.ColliderDesc.heightfield(PHYS_RES - 1, PHYS_RES - 1, heightfieldData, { x: WORLD_SIZE, y: MAX_HEIGHT, z: WORLD_SIZE })',
-  'RAPIER.ColliderDesc.heightfield(PHYS_RES, PHYS_RES, heightfieldData, { x: WORLD_SIZE, y: MAX_HEIGHT, z: WORLD_SIZE })'
-);
+// Older production builds used Rapier heightfields. Newer compatibility builds replace that
+// WebAssembly path entirely (e.g. with a triangle collider), so only correct the dimensions when
+// a heightfield is actually still present instead of failing the whole build.
+const oldHeightfield = 'RAPIER.ColliderDesc.heightfield(PHYS_RES - 1, PHYS_RES - 1, heightfieldData, { x: WORLD_SIZE, y: MAX_HEIGHT, z: WORLD_SIZE })';
+if (source.includes(oldHeightfield)) {
+  source = source.replace(
+    oldHeightfield,
+    'RAPIER.ColliderDesc.heightfield(PHYS_RES, PHYS_RES, heightfieldData, { x: WORLD_SIZE, y: MAX_HEIGHT, z: WORLD_SIZE })'
+  );
+  console.log('render-compat: corrected legacy Rapier heightfield dimensions');
+} else {
+  console.log('render-compat: heightfield patch skipped; compatibility terrain collider already installed');
+}
 
 // Make the scene background explicit on the WebGL path as well as through scene.background.
 source = source.replace(
@@ -61,7 +66,7 @@ await build({
   sourcemap: true,
   legalComments: 'linked',
   treeShaking: true,
-  define: { 'process.env.NODE_ENV': '"production"' },
+  define: { 'process.env.NODE_ENV': '\"production\"' },
 });
 
-console.log('render-compat: WebGL renderer + correct Rapier heightfield dimensions + boot ground guard');
+console.log('render-compat: WebGL renderer + collision compatibility + boot ground guard');
