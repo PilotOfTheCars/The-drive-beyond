@@ -81,8 +81,12 @@ jobs:
           grep -q 'HatchBackLowPoly.fbx' src/final.bundle.js
           grep -q 'fab.fbx' src/final.bundle.js
           grep -q 'WebGLRenderer' .build/final-game.js
-          grep -q 'heightfield(PHYS_RES, PHYS_RES' .build/final-game.js
+          grep -q 'ColliderDesc.trimesh' .build/final-game.js
           grep -q 'let roadCollider = null' .build/final-game.js
+          if grep -q 'ColliderDesc.heightfield' .build/final-game.js; then
+            echo 'Legacy Rapier heightfield path survived the compatibility build.' >&2
+            exit 1
+          fi
           if grep -q 'Textures/HatchBackLowPoly.fbx' src/final.bundle.js; then
             echo 'Player FBX was incorrectly rewritten into the texture folder.' >&2
             exit 1
