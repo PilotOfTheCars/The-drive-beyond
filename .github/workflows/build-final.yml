@@ -7,6 +7,8 @@ on:
       - 'package.json'
       - 'src/final-game.js'
       - 'scripts/build.mjs'
+      - 'scripts/finish-build-v2.mjs'
+      - 'scripts/render-compat.mjs'
       - '.github/workflows/build-final.yml'
   workflow_dispatch:
 
@@ -58,7 +60,6 @@ jobs:
           if old not in s:
               raise SystemExit('Expected texture URL modifier line not found')
           s = s.replace(old, new, 1)
-          # Future boot failures should show the useful error message, not only a minified stack coordinate.
           s = s.replace("ui.protocol.textContent=String(err?.stack||err?.message||err);", "ui.protocol.textContent=String(err?.message||err);", 1)
           p.write_text(s, encoding='utf-8')
           print('FBX files now bypass the texture-folder URL modifier.')
@@ -73,12 +74,15 @@ jobs:
       - name: Validate production bundle
         run: node --check src/final.bundle.js
 
-      - name: Assert uploaded vehicle paths survived bundling
+      - name: Assert production invariants
         shell: bash
         run: |
           set -euo pipefail
           grep -q 'HatchBackLowPoly.fbx' src/final.bundle.js
           grep -q 'fab.fbx' src/final.bundle.js
+          grep -q 'WebGLRenderer' .build/final-game.js
+          grep -q 'heightfield(PHYS_RES, PHYS_RES' .build/final-game.js
+          grep -q 'let roadCollider = null' .build/final-game.js
           if grep -q 'Textures/HatchBackLowPoly.fbx' src/final.bundle.js; then
             echo 'Player FBX was incorrectly rewritten into the texture folder.' >&2
             exit 1
@@ -97,7 +101,7 @@ jobs:
           sleep 2
           chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
           if [ -n "$chrome" ]; then
-            "$chrome" --headless=new --no-sandbox --disable-dev-shm-usage --enable-unsafe-webgpu --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/ > /tmp/tdb-dom.html 2>/tmp/tdb-browser.log
+            "$chrome" --headless=new --no-sandbox --disable-dev-shm-usage --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8000/ > /tmp/tdb-dom.html 2>/tmp/tdb-browser.log
             echo '--- loading status ---'
             grep -o '<div id="loadText"[^>]*>[^<]*' /tmp/tdb-dom.html || true
             grep -o '<div id="protocolNote"[^>]*>[^<]*' /tmp/tdb-dom.html || true
@@ -109,13 +113,29 @@ jobs:
           kill "$server" 2>/dev/null || true
           exit 0
 
+      - name: Cache-bust deployed runtime
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+          p = Path('index.html')
+          s = p.read_text('utf-8')
+          version = os.environ['GITHUB_SHA'][:12]
+          s, n = re.subn(r'final\.bundle\.js\?v=[^"\']+', f'final.bundle.js?v={version}', s, count=1)
+          if n != 1:
+              raise SystemExit('Could not update production bundle cache key in index.html')
+          p.write_text(s, encoding='utf-8')
+          print('Bundle cache key:', version)
+          PY
+
       - name: Commit reproducible browser build
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package-lock.json src/final.bundle.js src/final.bundle.js.map assets/open/nature
+          git add package-lock.json index.html src/final.bundle.js src/final.bundle.js.map assets/open/nature
           if [ -f src/final.bundle.js.LEGAL.txt ]; then git add src/final.bundle.js.LEGAL.txt; fi
           if git diff --cached --quiet; then
             echo 'No generated changes.'
