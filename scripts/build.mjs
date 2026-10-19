@@ -110,6 +110,46 @@ function rebuildTerrain() {
 // ---- Road geometry (Three BufferGeometry + BVH) --------------------------`
 );
 
+// Rapier's WASM heightfield constructor traps on some iPad/WebKit builds. Use a
+// deterministic triangle mesh instead, matching the sampled terrain heights.
+// This is a physics mesh, not a visual fallback or a disabled collision system.
+patch(
+  'replace WebKit-trapping Rapier heightfield',
+  /function rebuildPhysicsTerrain\(\) \{[\s\S]*?\n\}\n\n\/\/ ---- Stable Three.js terrain/,
+`function rebuildPhysicsTerrain() {
+  if (terrainCollider) { physics.removeCollider(terrainCollider, true); terrainCollider = null; }
+  const cells = 64;
+  const side = cells + 1;
+  const vertices = new Float32Array(side * side * 3);
+  const indices = new Uint32Array(cells * cells * 6);
+  for (let z = 0; z <= cells; z++) {
+    const lz = -WORLD_SIZE / 2 + (z / cells) * WORLD_SIZE;
+    for (let x = 0; x <= cells; x++) {
+      const lx = -WORLD_SIZE / 2 + (x / cells) * WORLD_SIZE;
+      const i = (z * side + x) * 3;
+      vertices[i] = lx;
+      vertices[i + 1] = worldHeight(origin.x + lx, origin.z + lz);
+      vertices[i + 2] = lz;
+    }
+  }
+  let n = 0;
+  for (let z = 0; z < cells; z++) {
+    for (let x = 0; x < cells; x++) {
+      const a = z * side + x, b = a + 1, c = a + side, d = c + 1;
+      indices[n++] = a; indices[n++] = c; indices[n++] = b;
+      indices[n++] = b; indices[n++] = c; indices[n++] = d;
+    }
+  }
+  const desc = RAPIER.ColliderDesc.trimesh(vertices, indices);
+  desc.setFriction(1.1);
+  terrainCollider = physics.createCollider(desc);
+}
+
+// ---- Stable Three.js terrain`
+);
+
+
+
 // Fix the two accidental road-edge ribbons while retaining the road center line.
 source = source
   .replace("  roadVisual.add(ribbon(-1900, 1900, ROAD_HALF - 0.24, lineMat, 0.125));\n", '')
